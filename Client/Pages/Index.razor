@@ -1,0 +1,132 @@
+﻿@page "/"
+@using BlazorComponent
+<MCard Dark Flat>
+    <MDialog @bind-Value="ShowAddETEDialog" Persistent>
+        <ActivatorContent>
+
+    <MButton Absolute Bottom Right Fab @attributes="@context.Attrs">
+            <MIcon>mdi-plus</MIcon>
+        </MButton>
+        </ActivatorContent>
+        <ChildContent>
+            <MCard>
+                <MCardTitle>
+                    <span class="text-h5">New Failure</span>
+                </MCardTitle>
+                <MCardText>
+                    <MContainer>
+                        <MRow>
+                            <MCol Cols="12"
+                                  Sm="6"
+                                  Md="2">
+                                <MTextField Label="Time 📅"
+                                            TValue="DateTime"
+                                            @bind-Value="ETETime"
+                                            Hint="Time" Readonly>
+                                </MTextField>
+                            </MCol>
+                        </MRow>
+                        <MRow>
+                            <MCol Cols="12"
+                                  Sm="6"
+                                  Md="2">
+                                <MTextField Label="Slogan"
+                                            TValue="string"
+                                            @bind-Value="Slogan"
+                                            Hint="Slogan">
+                                </MTextField>
+                            </MCol>
+                        </MRow>
+                        <MRow>
+                            <MCol Cols="12"
+                                  Sm="6"
+                                  Md="2">
+                                <MTextField Label="Address 🌐"
+                                            TValue="string"
+                                            @bind-Value="Address"
+                                            Hint="Address">
+                                </MTextField>
+                            </MCol>
+                        </MRow>
+                        <MRow>
+                            <MCol Cols="12"
+                                  Sm="6"
+                                  Md="2">
+                                <MTextField Label="Reason"
+                                            TValue="string"
+                                            @bind-Value="Reason"
+                                            Hint="Why">
+                                </MTextField>
+                            </MCol>
+                        </MRow>
+                        <MRow>
+                            <MCol Cols="12"
+                                  Sm="6"
+                                  Md="2">
+                                <MTextField Label="Your ETE Code"
+                                            TValue="string"
+                                            @bind-Value="ETEUserCode"
+                                            Hint="ETE Person Code">
+                                </MTextField>
+                            </MCol>
+                        </MRow>
+                    </MContainer>
+                </MCardText>
+                <MCardActions>
+                    <MSpacer></MSpacer>
+                    <MButton Color="blue darken-1"
+                             Text
+                             OnClick="()=> ShowAddETEDialog = false">
+                        Cancel
+                    </MButton>
+                    <MButton OnClick="() => Add()">
+                        💥 ETE
+                    </MButton>
+                </MCardActions>
+            </MCard>
+        </ChildContent>
+    </MDialog>
+        <MImage Src="http://up.iosdesk.com/pic/48/d9/f6/48d9f63750f930eb47979f6307596cb0.jpg"
+               Gradient="to top, rgba(0,0,0,.44), rgba(0,0,0,.44)" Dark>
+            <MContainer Class="fill-height">
+                <MRow Align="@AlignTypes.Center">
+                    <strong class="text-h3 font-weight-regular mr-6">@DateTime.Today.ToString("yyyy-MM-dd") </strong>
+                    <br/>
+                    <br/>
+                    <MRow Justify="@JustifyTypes.End">
+                        <div class="text-h5 font-weight-light">
+                            💥 @ETETotalCount
+                        </div>
+                        <div class="text-uppercase font-weight-light">
+                            
+                        </div>
+                    </MRow>
+                </MRow>
+            </MContainer>
+        </MImage>
+    </MCard>
+<MTimeline AlignTop Dense Style="margin-top:3%" >
+    @foreach (var item in Histories)
+    {
+        <MTimelineItem Color="@(item.Users?[0].Color??"white")">
+            <MCard Dark= "@(Histories.IndexOf(item)%2==0)" Style="margin-right:3%">
+                <MCardTitle>@item.ETETime.ToString("yyyy-MM-dd HH:mm:ss") <strong> <i>@(string.IsNullOrEmpty( item.Slogan)?"":$"💥{item.Slogan}💥")</i></strong></MCardTitle>
+                <MCardSubtitle>@(string.IsNullOrEmpty(item.Address)?"":$"🌐{item.Address}")</MCardSubtitle>
+                <MCardText>@item.Reason</MCardText>
+                <MCardText>
+                    @if (item.Users is not null && item.Users.Any())
+                    {
+                        @foreach (var user in item.Users)
+                        {
+                            <a href="@user.Link" target="_blank"><MAvatar Style="margin-right:1%"><MImage Src=@user.Avator></MImage></MAvatar></a>
+                        }
+                    }
+                    else
+                    {
+                        <MAvatar Color="primary">ETE</MAvatar>
+                    }
+                </MCardText>
+            </MCard>
+        </MTimelineItem>
+    }
+</MTimeline>
