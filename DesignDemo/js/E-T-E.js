@@ -3,7 +3,9 @@ var camera, scene, renderer;
 
 var sphereMesh;
 
-var mouse = new THREE.Vector2;
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let currentObj = null;
 
 var me = false
 var isStop = false;
@@ -13,7 +15,7 @@ var viewX = 0;
 var be = 0;
 var x = 500;
 var j = 1e3;
-
+var step = .005;
 var PI_HALF = Math.PI / 2;
 
 var pos = {
@@ -36,24 +38,18 @@ var p = {
 main();
 sphere();
 var a = 6.98;
-addSharp(a, a, 15 * a, 0, 0, "Binla");
+addSharp(a, a, 15 * a, 0, 0, "Shawn.xia was late and unhappy, boom!");
 var b = 15;
-addSharp(100, 0, 0, 180, 90, "Test");
+addSharp(100, 0, 0, 180, 90, "Alec.ji didn't want to learn, it was uncomfortable, boom!");
 
 onWindowResize();
 animate();
 
 function main(){
     container = document.getElementById("canvasT");
-    //创建一个新场景
     scene = new THREE.Scene();
-    //给场景添加光源
     scene.add(new THREE.AmbientLight(0xbbbbbb, 0.3));
-
-    //设置场景背景颜色
     scene.background = new THREE.Color(0x040d21);
-
-    //添加一个透视相机
     camera = new THREE.PerspectiveCamera(30,
                   window.innerWidth/window.innerHeight, 1, 1000);
 
@@ -69,18 +65,12 @@ function main(){
     dLight2.position.set(-200, 500, 200);
     camera.add(dLight2);
 
-    camera.position.set(0, 0, 400);//设置相机位置
-    camera.lookAt(new THREE.Vector3(0,0,0));//让相机指向原点
+    camera.position.set(0, 0, 400);
+    camera.lookAt(new THREE.Vector3(0,0,0));
     scene.add(camera);
-
-    //添加雾特效
     scene.fog = new THREE.Fog(0x535ef3, 400, 2000);
-
-    //渲染
-    //antialias:true增加抗锯齿效果
     renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setSize(window.innerWidth, window.innerHeight);//设置窗口尺寸
-    //将renderer关联到container，这个过程类似于获取canvas元素
+    renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
     container.addEventListener("mousedown", onMouseDown, false);
@@ -90,15 +80,12 @@ function main(){
     window.addEventListener('resize', onWindowResize, false);
 }
 
-//创建一个球
 function sphere(){
-    //创建球体
     var sphereGeo = new THREE.SphereGeometry(100, 40, 40);
-    //创建材质
     var sphereMat = new THREE.MeshLambertMaterial({color: 0x3b1066});
-    sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);//创建球体网格模型
-    sphereMesh.position.set(0, 0, 0);//设置球的坐标
-    scene.add(sphereMesh);//将球体添加到场景
+    sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    sphereMesh.position.set(0, 0, 0);
+    scene.add(sphereMesh);
 }
 
 function onWindowResize() {
@@ -127,6 +114,7 @@ function onMouseUp() {
 }
 function onMouseMove(event) {
     if (me) {
+      console.log("click");
       mouse.x = -event.clientX;
       mouse.y = event.clientY;
       var t = j / 1e3;
@@ -139,6 +127,25 @@ function onMouseMove(event) {
     }
 }
 function update(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  console.log(mouse);
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  currentObj ? currentObj : (currentObj = null);
+
+  if (intersects.length) {
+    if (intersects[0].object.type === "Mesh" && intersects[0].object.name!="") {
+      currentObj = intersects[0].object;
+      console.log('hover');
+      we = false;
+    }else{
+      we = true;
+    }
+  }else{
+    we = true;
+  }
 }
 function move(event) {
     if (event.preventDefault(), me) {
@@ -167,25 +174,42 @@ function animate() {
     if (!isStop) {
         applyForEach(viewX);
         if (we) {
+            if(step<.005){
+                step += .0001;
+            }
             if (be === target.x + target.y) {
-              target.x -= .005;
+              target.x -= step;
             } else {
               be = target.x + target.y;
             }
             rotation.x += .1 * (target.x - rotation.x);
             rotation.y += .1 * (target.y - rotation.y);
             j = j + .3 * (x - j);
-            camera.position.x = j * Math.sin(rotation.x) * Math.cos(rotation.y);
-            camera.position.y = j * Math.sin(rotation.y);
-            camera.position.z = j * Math.cos(rotation.x) * Math.cos(rotation.y);
+        }else if(step >= .0007){
+            step -= .0001
+            if (be === target.x + target.y) {
+              target.x -= step;
+            } else {
+              be = target.x + target.y;
+            }
+            rotation.x += .1 * (target.x - rotation.x);
+            rotation.y += .1 * (target.y - rotation.y);
+            j = j + .3 * (x - j);
         }
+
+        camera.position.x = j * Math.sin(rotation.x) * Math.cos(rotation.y);
+        camera.position.y = j * Math.sin(rotation.y);
+        camera.position.z = j * Math.cos(rotation.x) * Math.cos(rotation.y);
         camera.lookAt(sphereMesh.position);
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
     }
+    if (currentObj != undefined && currentObj != null) {
+      renderDiv(currentObj);
+    }
 }
 
-function addSharp(xPosition, yPosition, zPosition, rotationX, rotationY, title) {
+function addSharp(xPosition, yPosition, zPosition, rotationX, rotationY, desc) {
     const x = 0, y = 0;
 
     const heartShape = new THREE.Shape();
@@ -204,6 +228,20 @@ function addSharp(xPosition, yPosition, zPosition, rotationX, rotationY, title) 
     r.position.set(xPosition, yPosition, zPosition);
     r.rotation.x = THREE.Math.degToRad(rotationX);
     r.rotation.y = THREE.Math.degToRad(rotationY);
-    r.name = "destory-area target=" + title;
+    r.name = desc;
     scene.add(r);
-  }
+}
+
+function stop(){
+  we = !we;
+}
+
+function renderDiv(object) {
+  var halfWidth = window.innerWidth / 2;
+  var halfHeight = window.innerHeight / 2;
+  var vector = object.position.clone().project(camera);
+
+  document.getElementById("label").style.left = vector.x * halfWidth + halfWidth;
+  document.getElementById("label").style.top = -vector.y * halfHeight + halfHeight - object.position.y;
+  document.getElementById("label").innerHTML= "Reason: " + object.name;
+}

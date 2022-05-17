@@ -2,13 +2,29 @@
     <head>
         <meta charset="UTF-8">
         <title>E-T-E</title>
+
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+            }
+    
+            #label {
+                position: absolute;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.6);
+                line-height: 1;
+                border-radius: 5px;
+            }
+        </style>
     </head>
 
     <body>
+        <button onclick="stop()">Stop</button>
         <div id="canvasT"></div>
-
+        <div id="label"></div>
+        
         <script src='js/three.min.js'></script>
-        <script src='js/OrbitControls.js'></script>
         <script src='js/E-T-E.js'></script>
     </body>
 </html>
